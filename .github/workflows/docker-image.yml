@@ -9,7 +9,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/minha-api
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   build_push:
