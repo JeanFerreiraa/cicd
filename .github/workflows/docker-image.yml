@@ -1,26 +1,32 @@
-steps:
-- uses: actions/checkout@v4
+name: Build and Push Docker Image (GHCR)
 
-      - name: Set image name (lowercase)
-      - name: Compute image name (lowercase)
-        id: meta
-run: |
-         REPO_LC="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
-         echo "IMAGE_NAME=ghcr.io/${REPO_LC}/minha-api" >> $GITHUB_ENV
-          echo "Using IMAGE_NAME=ghcr.io/${REPO_LC}/minha-api"
+on:
+  push:
+    branches: ["main"]
 
-     - name: Log in to GHCR
-run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+permissions:
+  contents: read
+  packages: write
 
-- name: Build
-run: |
-          docker build -t $IMAGE_NAME:${{ github.sha }} -t $IMAGE_NAME:latest .
+env:
+  IMAGE_NAME: ghcr.io/jeanferreiraa/cicd
+
+jobs:
+  build_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build
+        run: |
           echo "IMAGE_NAME is: $IMAGE_NAME"
           docker build -t "$IMAGE_NAME:${{ github.sha }}" -t "$IMAGE_NAME:latest" .
 
-     - name: Push
-run: |
-          docker push $IMAGE_NAME:${{ github.sha }}
-          docker push $IMAGE_NAME:latest
+      - name: Push
+        run: |
           docker push "$IMAGE_NAME:${{ github.sha }}"
           docker push "$IMAGE_NAME:latest"
