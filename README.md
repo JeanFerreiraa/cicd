@@ -1,1 +1,1 @@
-# cicd
+# CI + Docker + GHCR
