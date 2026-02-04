@@ -15,22 +15,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compute image name (lowercase)
-        id: meta
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn pydantic pytest httpx
+
+      - name: Run tests
+        run: |
+          pytest test_main.py
+
+      - name: Compute image name (lowercase)
+        run: |
+          # Transforma o nome do repo em minúsculas para o Docker aceitar
           REPO_LC="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
           echo "IMAGE_NAME=ghcr.io/${REPO_LC}/minha-api" >> $GITHUB_ENV
-          echo "Using IMAGE_NAME=ghcr.io/${REPO_LC}/minha-api"
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build
+      - name: Build and Push
         run: |
-          echo "IMAGE_NAME is: $IMAGE_NAME"
+          # Constrói a imagem com as duas tags
           docker build -t "$IMAGE_NAME:${{ github.sha }}" -t "$IMAGE_NAME:latest" .
-
-      - name: Push
-        run: |
+          
+          # Envia as duas tags para o GitHub Packages
           docker push "$IMAGE_NAME:${{ github.sha }}"
           docker push "$IMAGE_NAME:latest"
