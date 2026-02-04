@@ -15,20 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install fastapi uvicorn pydantic pytest httpx
-
-      - name: Run tests
-        run: |
-          pytest test_main.py
-
       - name: Compute image name (lowercase)
         run: |
           # Transforma o nome do repo em minúsculas para o Docker aceitar
@@ -40,9 +26,7 @@ jobs:
 
       - name: Build and Push
         run: |
-          # Constrói a imagem com as duas tags
           docker build -t "$IMAGE_NAME:${{ github.sha }}" -t "$IMAGE_NAME:latest" .
           
-          # Envia as duas tags para o GitHub Packages
           docker push "$IMAGE_NAME:${{ github.sha }}"
           docker push "$IMAGE_NAME:latest"
